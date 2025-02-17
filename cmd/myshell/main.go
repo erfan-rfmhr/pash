@@ -25,6 +25,6 @@ func main() {
 			exitCode, _ := strconv.Atoi(strings.TrimSpace(splited[1]))
 			os.Exit(exitCode)
 		}
-		fmt.Fprintln(os.Stdout, command[:len(command)-1]+": command not found")
+		fmt.Fprintln(os.Stdout, strings.TrimSpace(command)+": command not found")
 	}
 }
