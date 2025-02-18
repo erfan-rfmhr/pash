@@ -26,7 +26,11 @@ func main() {
 			exitCode, _ := strconv.Atoi(strings.TrimSpace(full_command[1]))
 			os.Exit(exitCode)
 		case "echo":
-			fmt.Println(full_command[1])
+			n := len(full_command[1:])
+			for i := 0; i<n; i++ {
+				fmt.Print(full_command[i+1] + " ")
+			}
+			fmt.Println()
 		default:
 			fmt.Fprintln(os.Stdout, strings.TrimSpace(command)+": command not found")
 		}
