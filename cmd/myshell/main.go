@@ -16,15 +16,19 @@ func main() {
 			fmt.Fprint(os.Stderr, "Error reading input:", err)
 			os.Exit(1)
 		}
-		splited := strings.Split(command, " ")
-		parent := splited[0]
-		switch parent {
-		case "\n":
+		full_command := strings.Fields(command)
+		if len(full_command) == 0 {
 			os.Exit(0)
-		case "exit":
-			exitCode, _ := strconv.Atoi(strings.TrimSpace(splited[1]))
-			os.Exit(exitCode)
 		}
-		fmt.Fprintln(os.Stdout, strings.TrimSpace(command)+": command not found")
+		parent := full_command[0]
+		switch parent {
+		case "exit":
+			exitCode, _ := strconv.Atoi(strings.TrimSpace(full_command[1]))
+			os.Exit(exitCode)
+		case "echo":
+			fmt.Println(full_command[1])
+		default:
+			fmt.Fprintln(os.Stdout, strings.TrimSpace(command)+": command not found")
+		}
 	}
 }
