@@ -34,6 +34,14 @@ func main() {
 		case "exit":
 			exit(full_command[1])
 
+		case "pwd":
+			wd, err := os.Getwd()
+			if err != nil {
+				fmt.Println(err)
+			} else {
+				fmt.Println(wd)
+			}
+
 		default:
 			run(parent, args)
 		}
@@ -51,7 +59,7 @@ func run(command string, args []string) {
 }
 
 func type_command(command string) {
-	shell_built_in_commands := []string{"echo", "exit", "type"}
+	shell_built_in_commands := []string{"echo", "exit", "type", "pwd"}
 	if slices.Contains(shell_built_in_commands, command) {
 		fmt.Println(command + " is a shell builtin")
 		return
