@@ -13,8 +13,7 @@ func main() {
 		fmt.Fprint(os.Stdout, "$ ")
 		command, err := bufio.NewReader(os.Stdin).ReadString('\n')
 		if err != nil {
-			fmt.Fprint(os.Stderr, "Error reading input:", err)
-			os.Exit(1)
+			panic(err)
 		}
 		full_command := strings.Fields(command)
 		if len(full_command) == 0 {
@@ -22,17 +21,46 @@ func main() {
 		}
 		parent := full_command[0]
 		switch parent {
+
+		case "type":
+			type_command(full_command[1])
+			
 		case "exit":
-			exitCode, _ := strconv.Atoi(strings.TrimSpace(full_command[1]))
-			os.Exit(exitCode)
+			exit(full_command[1])
+			
 		case "echo":
-			n := len(full_command[1:])
-			for i := 0; i<n; i++ {
-				fmt.Print(full_command[i+1] + " ")
-			}
-			fmt.Println()
+			echo(full_command[1:])
+
 		default:
 			fmt.Fprintln(os.Stdout, strings.TrimSpace(command)+": command not found")
 		}
 	}
+}
+
+func type_command(command string) {
+	shell_built_in_commands := [...]string{"echo", "exit", "type"}
+	for i := 0; i<len(shell_built_in_commands); i++ {
+		if shell_built_in_commands[i] == command {
+			fmt.Println(command + " is a shell builtin")
+			return
+		}
+	}
+	fmt.Println(command + ": not found")
+}
+
+func exit(code string) {
+	exitCode, _ := strconv.Atoi(strings.TrimSpace(code))
+	os.Exit(exitCode)
+}
+
+func echo(args []string) {
+	n := len(args)
+	for i := 0; i < n; i++ {
+		if i < n-1 {
+			fmt.Print(args[i] + " ")
+		} else {
+			fmt.Print(args[i])
+		}
+	}
+	fmt.Println()
 }
