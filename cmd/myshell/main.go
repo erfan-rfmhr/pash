@@ -4,6 +4,8 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"os/exec"
+	"slices"
 	"strconv"
 	"strings"
 )
@@ -24,10 +26,10 @@ func main() {
 
 		case "type":
 			type_command(full_command[1])
-			
+
 		case "exit":
 			exit(full_command[1])
-			
+
 		case "echo":
 			echo(full_command[1:])
 
@@ -38,10 +40,13 @@ func main() {
 }
 
 func type_command(command string) {
-	shell_built_in_commands := [...]string{"echo", "exit", "type"}
-	for i := 0; i<len(shell_built_in_commands); i++ {
-		if shell_built_in_commands[i] == command {
-			fmt.Println(command + " is a shell builtin")
+	shell_built_in_commands := []string{"echo", "exit", "type"}
+	if slices.Contains(shell_built_in_commands, command) {
+		fmt.Println(command + " is a shell builtin")
+		return
+	} else {
+		if path, err := exec.LookPath(command); err == nil {
+			fmt.Println(command + " is " + path)
 			return
 		}
 	}
