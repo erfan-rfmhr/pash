@@ -107,4 +107,6 @@ func cd(dir string) {
 			fmt.Println("cd: " + dir + ": No such file or directory")
 		}
 	}
+	currDir, _ := os.Getwd()
+	os.Setenv("PWD", currDir)
 }
