@@ -27,7 +27,6 @@ func main() {
 		args := fullCommand[1:]
 
 		switch parent {
-
 		case "type":
 			typeCommand(fullCommand[1])
 
@@ -40,6 +39,13 @@ func main() {
 				fmt.Println(err)
 			} else {
 				fmt.Println(wd)
+			}
+
+		case "cd":
+			if len(args) != 0 {
+				cd(args[0])
+			} else {
+				cd("~")
 			}
 
 		default:
@@ -75,4 +81,30 @@ func typeCommand(command string) {
 func exit(code string) {
 	exitCode, _ := strconv.Atoi(strings.TrimSpace(code))
 	os.Exit(exitCode)
+}
+
+func cd(dir string) {
+	switch dir {
+	case "..":
+		err := os.Chdir("../")
+		if err != nil {
+			fmt.Println(err)
+		}
+
+	case "~":
+		homeDir, err := os.UserHomeDir()
+		if err != nil {
+			fmt.Println(err)
+		}
+		err = os.Chdir(homeDir)
+		if err != nil {
+			fmt.Println(err)
+		}
+
+	default:
+		err := os.Chdir(dir)
+		if err != nil {
+			fmt.Println("cd: " + dir + ": No such file or directory")
+		}
+	}
 }
