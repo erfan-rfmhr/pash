@@ -13,26 +13,26 @@ import (
 func main() {
 	for {
 		fmt.Fprint(os.Stdout, "$ ")
-		
+
 		command, err := bufio.NewReader(os.Stdin).ReadString('\n')
 		if err != nil {
 			panic(err)
 
 		}
-		full_command := strings.Fields(command)
-		if len(full_command) == 0 {
+		fullCommand := strings.Fields(command)
+		if len(fullCommand) == 0 {
 			os.Exit(0)
 		}
-		parent := full_command[0]
-		args := full_command[1:]
-		
+		parent := fullCommand[0]
+		args := fullCommand[1:]
+
 		switch parent {
 
 		case "type":
-			type_command(full_command[1])
+			typeCommand(fullCommand[1])
 
 		case "exit":
-			exit(full_command[1])
+			exit(fullCommand[1])
 
 		case "pwd":
 			wd, err := os.Getwd()
@@ -54,13 +54,13 @@ func run(command string, args []string) {
 	cmd.Stderr = os.Stderr
 	err := cmd.Run()
 	if err != nil {
-		fmt.Println(strings.TrimSpace(command)+": command not found")	
+		fmt.Println(strings.TrimSpace(command) + ": command not found")
 	}
 }
 
-func type_command(command string) {
-	shell_built_in_commands := []string{"echo", "exit", "type", "pwd"}
-	if slices.Contains(shell_built_in_commands, command) {
+func typeCommand(command string) {
+	shellBuiltInCommands := []string{"echo", "exit", "type", "pwd"}
+	if slices.Contains(shellBuiltInCommands, command) {
 		fmt.Println(command + " is a shell builtin")
 		return
 	} else {
