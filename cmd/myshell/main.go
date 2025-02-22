@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"golang.org/x/term"
 	"os"
 	"os/exec"
 	"slices"
@@ -10,47 +11,93 @@ import (
 	"strings"
 )
 
-func main() {
-	for {
-		fmt.Fprint(os.Stdout, "$ ")
+var builtins = []string{"echo", "exit", "type", "pwd", "cd"}
 
-		command, err := bufio.NewReader(os.Stdin).ReadString('\n')
+func main() {
+	oldState, err := term.MakeRaw(int(os.Stdin.Fd()))
+	if err != nil {
+		panic(err)
+	}
+	defer term.Restore(int(os.Stdin.Fd()), oldState)
+
+	reader := bufio.NewReader(os.Stdin)
+	var inputBuffer []rune
+
+	for {
+		fmt.Print("\r$ " + string(inputBuffer))
+
+		r, _, err := reader.ReadRune()
 		if err != nil {
 			panic(err)
-
 		}
-		fullCommand := strings.Fields(command)
-		if len(fullCommand) == 0 {
-			os.Exit(0)
-		}
-		parent := fullCommand[0]
-		args := fullCommand[1:]
 
-		switch parent {
-		case "type":
-			typeCommand(fullCommand[1])
-
-		case "exit":
-			exit(fullCommand[1])
-
-		case "pwd":
-			wd, err := os.Getwd()
-			if err != nil {
-				fmt.Println(err)
-			} else {
-				fmt.Println(wd)
+		switch r {
+		case '\t': // TAB pressed
+			currentWord := string(inputBuffer)
+			var matches []string
+			for _, cmd := range builtins {
+				if strings.HasPrefix(cmd, currentWord) {
+					matches = append(matches, cmd)
+				}
 			}
 
-		case "cd":
-			if len(args) != 0 {
-				cd(args[0])
-			} else {
-				cd("~")
+			if len(matches) == 1 {
+				inputBuffer = []rune(matches[0] + " ")
+			} else if len(matches) > 1 {
+				fmt.Printf("\n%s", strings.Join(matches, " "))
+				inputBuffer = []rune{}
+			}
+
+		case '\r', '\n': // Enter pressed
+			fmt.Println()
+			handleInput(string(inputBuffer))
+			inputBuffer = []rune{}
+
+		case 127: // Backspace
+			if len(inputBuffer) > 0 {
+				inputBuffer = inputBuffer[:len(inputBuffer)-1]
 			}
 
 		default:
-			run(parent, args)
+			if r >= 32 && r <= 126 || r == ' ' {
+				inputBuffer = append(inputBuffer, r)
+			}
 		}
+	}
+}
+
+func handleInput(input string) {
+	fullCommand := strings.Fields(input)
+	if len(fullCommand) == 0 {
+		os.Exit(0)
+	}
+	parent := fullCommand[0]
+	args := fullCommand[1:]
+
+	switch parent {
+	case "type":
+		typeCommand(fullCommand[1])
+
+	case "exit":
+		exit(fullCommand[1])
+
+	case "pwd":
+		wd, err := os.Getwd()
+		if err != nil {
+			fmt.Println(err)
+		} else {
+			fmt.Println(wd)
+		}
+
+	case "cd":
+		if len(args) != 0 {
+			cd(args[0])
+		} else {
+			cd("~")
+		}
+
+	default:
+		run(parent, args)
 	}
 }
 
