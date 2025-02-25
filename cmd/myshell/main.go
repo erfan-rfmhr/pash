@@ -2,13 +2,15 @@ package main
 
 import (
 	"bufio"
+	"bytes"
 	"fmt"
-	"golang.org/x/term"
 	"os"
 	"os/exec"
 	"slices"
 	"strconv"
 	"strings"
+
+	"golang.org/x/term"
 )
 
 var builtins = []string{"echo", "exit", "type", "pwd", "cd"}
@@ -24,6 +26,9 @@ func main() {
 	var inputBuffer []rune
 
 	for {
+		// Clear the current line
+		fmt.Print("\r$ " + strings.Repeat(" ", len(inputBuffer)+1))
+		// Redraw the prompt and input buffer
 		fmt.Print("\r$ " + string(inputBuffer))
 
 		r, _, err := reader.ReadRune()
@@ -59,7 +64,7 @@ func main() {
 			}
 
 		default:
-			if r >= 32 && r <= 126 || r == ' ' {
+			if r >= 32 && r <= 126 {
 				inputBuffer = append(inputBuffer, r)
 			}
 		}
@@ -69,7 +74,7 @@ func main() {
 func handleInput(input string) {
 	fullCommand := strings.Fields(input)
 	if len(fullCommand) == 0 {
-		os.Exit(0)
+		return
 	}
 	parent := fullCommand[0]
 	args := fullCommand[1:]
@@ -102,13 +107,15 @@ func handleInput(input string) {
 }
 
 func run(command string, args []string) {
+	var out bytes.Buffer
 	cmd := exec.Command(command, args...)
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
+	cmd.Stdout = &out
 	err := cmd.Run()
 	if err != nil {
 		fmt.Println(strings.TrimSpace(command) + ": command not found")
+		return
 	}
+	fmt.Print(out.String()) // Print the captured output
 }
 
 func typeCommand(command string) {
