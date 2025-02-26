@@ -26,7 +26,7 @@ func main() {
 	var inputBuffer []rune
 
 	for {
-		// Clear the current line
+		// Clear the current line due to Backspace handling
 		fmt.Print("\r$ " + strings.Repeat(" ", len(inputBuffer)+1))
 		// Redraw the prompt and input buffer
 		fmt.Print("\r$ " + string(inputBuffer))
@@ -54,9 +54,17 @@ func main() {
 			}
 
 		case '\r', '\n': // Enter pressed
+			term.Restore(int(os.Stdin.Fd()), oldState)
 			fmt.Println()
+			// Restore terminal state before executing the command
+			term.Restore(int(os.Stdin.Fd()), oldState)
 			handleInput(string(inputBuffer))
 			inputBuffer = []rune{}
+			// Set terminal back to raw mode after command execution
+			oldState, err = term.MakeRaw(int(os.Stdin.Fd()))
+			if err != nil {
+				panic(err)
+			}
 
 		case 127: // Backspace
 			if len(inputBuffer) > 0 {
@@ -107,15 +115,15 @@ func handleInput(input string) {
 }
 
 func run(command string, args []string) {
-	var out bytes.Buffer
+	var output bytes.Buffer
 	cmd := exec.Command(command, args...)
-	cmd.Stdout = &out
+	cmd.Stdout = &output
 	err := cmd.Run()
 	if err != nil {
 		fmt.Println(strings.TrimSpace(command) + ": command not found")
 		return
 	}
-	fmt.Print(out.String()) // Print the captured output
+	fmt.Print(output.String()) // Print the captured output
 }
 
 func typeCommand(command string) {
