@@ -45,23 +45,25 @@ func main() {
 					matches = append(matches, cmd)
 				}
 			}
-			paths := os.Getenv("PATH")
-			pathDirs := strings.Split(paths, string(os.PathListSeparator))
-			for _, dir := range pathDirs {
-				entries, err := os.ReadDir(dir)
-				if err != nil {
-					continue
-				}
-				for _, entry := range entries {
-					if !entry.IsDir() {
-						if strings.HasPrefix(entry.Name(), currentWord) {
-							matches = append(matches, entry.Name())
+			if len(matches) == 0 {
+				paths := os.Getenv("PATH")
+				pathDirs := strings.Split(paths, string(os.PathListSeparator))
+				for _, dir := range pathDirs {
+					entries, err := os.ReadDir(dir)
+					if err != nil {
+						continue
+					}
+					for _, entry := range entries {
+						if !entry.IsDir() {
+							if strings.HasPrefix(entry.Name(), currentWord) {
+								matches = append(matches, entry.Name())
+							}
 						}
 					}
 				}
-			}
-			if len(matches) == 0 {
-				fmt.Print("\a") // Play bell sound
+				if len(matches) == 0 {
+					fmt.Print("\a") // Play bell sound
+				}
 			} else if len(matches) == 1 {
 				inputBuffer = []rune(matches[0] + " ")
 			} else if len(matches) > 1 {
