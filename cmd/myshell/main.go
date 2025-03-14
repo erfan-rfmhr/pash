@@ -46,10 +46,12 @@ func main() {
 				}
 			}
 
-			if len(matches) == 1 {
+			if len(matches) == 0 {
+				fmt.Print("\a") // Play bell sound
+			} else if len(matches) == 1 {
 				inputBuffer = []rune(matches[0] + " ")
 			} else if len(matches) > 1 {
-				fmt.Printf("\n%s", strings.Join(matches, " "))
+				fmt.Println("\n%s", strings.Join(matches, " "))
 				inputBuffer = []rune{}
 			}
 
